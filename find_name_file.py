@@ -1,5 +1,5 @@
-def find_name_file(subject, save_pic, name_folder='none'):
-    if save_pic and name_folder:
+def find_name_file(subject, save_pic, name_folder):
+    if save_pic and name_folder!='none':
         if subject < 10:
             file = 'S00%sR01.edf' % subject
             name_folder = '/content/%s' % name_folder
@@ -33,7 +33,6 @@ def find_name_file(subject, save_pic, name_folder='none'):
                 file = 'S0%sR01.edf' % subject
             if subject > 99:
                 file = 'S%sR01.edf' % subject
-    if save_pic:
-            return file, name_image
-    else:
-        return file
+    if not save_pic:
+        name_image = '/content/none.png'
+    return file, name_image
