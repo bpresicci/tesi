@@ -1,4 +1,4 @@
-def find_name_file(subject, save_pic, name_folder):
+def find_name_file(subject, save_pic, name_folder='none'):
     if save_pic and name_folder:
         if subject < 10:
             file = 'S00%sR01.edf' % subject
