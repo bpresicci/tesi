@@ -1,3 +1,5 @@
+import numpy as np
+
 def count_subjects(subject_start, subject_end):
     n_subjects = subject_end - subject_start
     check_subjects = np.arange(subject_start, subject_end)
