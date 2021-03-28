@@ -1,39 +1,24 @@
 from scipy import signal as sig
 import numpy as np
 
-def feature_extraction(cfg, dataLen, nCh, epoch):
+def feature_extraction(cfg, nCh, epoch, idx_ep):
     epLen = cfg['windowL'] * cfg['fs']  # Number of samples of each epoch (for each channel)
-    isOverlap = 'wOverlap' in cfg.keys()  # isOverlap = True if the user wants a sliding window; the user will assign the value in seconds of the overlap desired to the key 'wOverlap'
-    if isOverlap:
-        idx_jump = (cfg['windowL'] - cfg['wOverlap']) * cfg['fs']  # idx_jump is the number of samples that separates the beginning of an epoch and the following one
-    else:
-        idx_jump = epLen
-    idx_ep = range(0, dataLen - epLen + 1, idx_jump)  # Indexes from which start each epoch
-    nEp = len(idx_ep)  # Total number of epochs
     freqRange = cfg['freqRange']  # Cut frequencies
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
+    nEp = len(idx_ep)  # Total number of epochs
     for e in range(nEp):
         for c in range(nCh):
             # compute power spectrum
             f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=round(epLen / 8), detrend=False)  # The nperseg allows the MATLAB pwelch correspondence
             if c == 0 and e == 0:  # The various parameters are obtained in the first interation
-                idx_min, idx_max, nFreq = _spectrum_parameters_no_pxx(f, freqRange, aux_pxx)
+                psd, idx_min, idx_max, nFreq = _spectrum_parameters(f, freqRange, aux_pxx, nEp, nCh)
                 if smoothing_condition:
                     window_range, initial_f, final_f = _smoothing_parameters(cfg['smoothFactor'], nFreq)
             if smoothing_condition:
-                psd = _movmean(aux_pxx, cfg['smoothFactor'], initial_f, final_f, nFreq, idx_min, idx_max)
+                psd[e][c] = _movmean(aux_pxx, cfg['smoothFactor'], initial_f, final_f, nFreq, idx_min, idx_max)
             else:
-                psd = aux_pxx[
-                      idx_min:idx_max + 1]  # pxx takes the only interested spectrum-related sub-array, è la matrice con i valori di PSD
-            if c == 0:
-                psd_ch = np.zeros(nCh * len(psd))
-            else:
-                psd_ch[c:c + len(psd)] = psd
-        if e == 0:
-            psd_ep = np.zeros(nEp * len(psd_ch))
-        else:
-            psd_ep[e:e + len(psd_ch)] = psd_ch
-    return psd_ep
+                psd[e][c] = aux_pxx[idx_min:idx_max + 1]  # pxx takes the only interested spectrum-related sub-array
+    return psd
 
 def _movmean(aux_pxx, smoothFactor, initial_f, final_f, nFreq, idx_min, idx_max):   #It is not weighted
     """
@@ -61,14 +46,15 @@ def _movmean(aux_pxx, smoothFactor, initial_f, final_f, nFreq, idx_min, idx_max)
     return smoothed
 
 
-def _spectrum_parameters_no_pxx(f, freqRange, aux_pxx):
+def _spectrum_parameters(f, freqRange, aux_pxx, nEp, nCh):
     """
     Function which defines the spectrum parameters for the scorEpochs function (FOR INTERNAL USE ONLY).
     """
-    idx_min = int(np.argmin(abs(f-freqRange[0])))
-    idx_max = int(np.argmin(abs(f-freqRange[-1])))
-    nFreq = len(aux_pxx[idx_min:idx_max+1])
-    return idx_min, idx_max, nFreq
+    idx_min = int(np.argmin(abs(f - freqRange[0])))
+    idx_max = int(np.argmin(abs(f - freqRange[-1])))
+    nFreq = len(aux_pxx[idx_min:idx_max + 1])
+    pxx = np.zeros((nEp, nCh, nFreq))
+    return pxx, idx_min, idx_max, nFreq
 
 
 def _smoothing_parameters(smoothFactor, nFreq):
