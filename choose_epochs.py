@@ -9,7 +9,7 @@ def min_score(idx_best, epoch, scores, min_percentage):
             new_idx_best = new_idx_best + [idx_best[i]]
     new_idx_best = np.array(new_idx_best)
     if len(new_idx_best) != len(idx_best):
-        epoch_list = np.zeros((new_idx_best, len(epoch[0]), len(epoch[0][0])))
+        epoch_list = np.zeros((len(new_idx_best), len(epoch[0]), len(epoch[0][0])))
         n_epochs = len(new_idx_best)
         for i in range(n_epochs):
             epoch_list[i] = epoch[new_idx_best[i]]
