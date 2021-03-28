@@ -1,9 +1,8 @@
 from scipy import signal as sig
 import numpy as np
 
-def feature_extraction(cfg, nCh, epoch, idx_ep):
+def feature_extraction(cfg, freq_range, nCh, epoch, idx_ep):
     epLen = cfg['windowL'] * cfg['fs']  # Number of samples of each epoch (for each channel)
-    freqRange = cfg['freqRange']  # Cut frequencies
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
     nEp = len(idx_ep)  # Total number of epochs
     for e in range(nEp):
@@ -11,7 +10,7 @@ def feature_extraction(cfg, nCh, epoch, idx_ep):
             # compute power spectrum
             f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=round(epLen / 8), detrend=False)  # The nperseg allows the MATLAB pwelch correspondence
             if c == 0 and e == 0:  # The various parameters are obtained in the first interation
-                psd, idx_min, idx_max, nFreq = _spectrum_parameters(f, freqRange, aux_pxx, nEp, nCh)
+                psd, idx_min, idx_max, nFreq = _spectrum_parameters(f, freq_range, aux_pxx, nEp, nCh)
                 if smoothing_condition:
                     window_range, initial_f, final_f = _smoothing_parameters(cfg['smoothFactor'], nFreq)
             if smoothing_condition:
@@ -66,3 +65,4 @@ def _smoothing_parameters(smoothFactor, nFreq):
     initial_f = int(window_range/2)
     final_f = nFreq - initial_f
     return window_range, initial_f, final_f
+
