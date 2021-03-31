@@ -19,6 +19,24 @@ def feature_extraction(cfg, freq_range, nCh, epoch, idx_ep):
                 psd[e][c] = aux_pxx[idx_min:idx_max + 1]  # pxx takes the only interested spectrum-related sub-array
     return psd
 
+def feature_extraction_1(cfg, freq_range, nCh, epoch):
+    epLen = cfg['windowL'] * cfg['fs']  # Number of samples of each epoch (for each channel)
+    smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
+    nEp = len(epoch)  # Total number of epochs
+    for e in range(nEp):
+        for c in range(nCh):
+            # compute power spectrum
+            f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=round(epLen / 8), detrend=False)  # The nperseg allows the MATLAB pwelch correspondence
+            if c == 0 and e == 0:  # The various parameters are obtained in the first interation
+                psd, idx_min, idx_max, nFreq = _spectrum_parameters(f, freq_range, aux_pxx, nEp, nCh)
+                if smoothing_condition:
+                    window_range, initial_f, final_f = _smoothing_parameters(cfg['smoothFactor'], nFreq)
+            if smoothing_condition:
+                psd[e][c] = _movmean(aux_pxx, cfg['smoothFactor'], initial_f, final_f, nFreq, idx_min, idx_max)
+            else:
+                psd[e][c] = aux_pxx[idx_min:idx_max + 1]  # pxx takes the only interested spectrum-related sub-array
+    return psd
+
 def _movmean(aux_pxx, smoothFactor, initial_f, final_f, nFreq, idx_min, idx_max):   #It is not weighted
     """
     Function used for computing the smoothed power spectrum through moving average filter, where each output sample is
