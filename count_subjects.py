@@ -25,4 +25,4 @@ def count_subjects(subject_start, subject_end):
           n_subjects = subject_end - subject_start -1          
   else:
     n_subjects = subject_end - subject_start     
-  return n_subjects*2
+  return n_subjects
