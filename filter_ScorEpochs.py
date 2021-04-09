@@ -1,12 +1,12 @@
 import numpy as np
 
-def filter_ScorEpochs_1(dataset, labels, scores, idx, percentage, tot_conditions, subject_start, subject_end):
+def filter_ScorEpochs_media_per_utente(dataset, labels, scores, idx, percentage, tot_conditions, subject_start, subject_end):
   new_dataset = []
   new_labels = []
   new_scores = []
   for condition in range(tot_conditions):
     for subject in range(subject_start, subject_end):
-      if subject  not in [88, 92, 100]:
+      if subject not in [88, 92, 100]:
         if condition == 0:
           id_des = subject
         else:
@@ -80,3 +80,79 @@ def filter_ScorEpochs_3(dataset, labels, scores, idx, percentage, tot_conditions
   new_labels = np.array(new_labels)
   new_scores = np.array(new_scores)
   return new_dataset, new_labels, new_scores
+
+def filter_ScorEpochs_togli_n_ep_peggiori(dataset, labels, scores, idx, percentage):
+  #elimino % epoche peggiori a prescindere dall'utente
+  new_tot_epoch = int(percentage * len(idx))
+  new_dataset = np.zeros((new_tot_epoch, len(dataset[0])))
+  new_labels = np.zeros(new_tot_epoch)
+  new_scores = np.zeros(new_tot_epoch)
+  indeces_best_scores = np.argsort(scores)
+  indeces_best_scores = indeces_best_scores[::-1]
+  for i in range(new_tot_epoch):
+    new_dataset[i] = dataset[indeces_best_scores[i]]
+    new_labels[i] = labels[indeces_best_scores[i]]
+    new_scores[i] = scores[indeces_best_scores[i]]
+  return new_dataset, new_labels, new_scores
+
+def filter_ScorEpochs_togli_random(dataset, labels, scores, idx, percentage):
+  #elimino % epoche a caso a prescindere dall'utente
+  new_tot_epoch = int(percentage * len(idx))
+  new_dataset = np.zeros((new_tot_epoch, len(dataset[0])))
+  new_labels = np.zeros(new_tot_epoch)
+  new_scores = np.zeros(new_tot_epoch)
+  indeces_random = np.arange(len(scores))
+  indeces_random = np.random.shuffle(indeces_random)
+  for i in range(new_tot_epoch):
+    new_dataset[i] = dataset[indeces_random[i]]
+    new_labels[i] = labels[indeces_random[i]]
+    new_scores[i] = scores[indeces_random[i]]
+  return new_dataset, new_labels, new_scores
+
+def filter_ScorEpochs_togli_n_ep_migliori(dataset, labels, scores, idx, percentage):
+  #elimino % epoche peggiori a prescindere dall'utente
+  new_tot_epoch = int(percentage * len(idx))
+  new_dataset = np.zeros((new_tot_epoch, len(dataset[0])))
+  new_labels = np.zeros(new_tot_epoch)
+  new_scores = np.zeros(new_tot_epoch)
+  indeces_best_scores = np.argsort(scores)
+  for i in range(new_tot_epoch):
+    new_dataset[i] = dataset[indeces_best_scores[i]]
+    new_labels[i] = labels[indeces_best_scores[i]]
+    new_scores[i] = scores[indeces_best_scores[i]]
+  return new_dataset, new_labels, new_scores
+
+def filter_ScorEpochs_migliori_ep_train(dataset, labels, scores, idx, percentage):
+  #train = % epoche migliori a prescindere dall'utente; test il resto
+  train_tot_epoch = int(percentage * len(idx))
+  test_tot_epoch = len(idx) - train_tot_epoch
+  train_dataset = np.zeros((train_tot_epoch, len(dataset[0])))
+  train_labels = np.zeros(train_tot_epoch)
+  test_dataset = np.zeros((test_tot_epoch, len(dataset[0])))
+  test_labels = np.zeros(test_tot_epoch)
+  indeces_best_scores = np.argsort(scores)
+  indeces_best_scores = indeces_best_scores[::-1]
+  for i in range(train_tot_epoch):
+    train_dataset[i] = dataset[indeces_best_scores[i]]
+    train_labels[i] = labels[indeces_best_scores[i]]
+  for i in range(test_tot_epoch):
+    test_dataset[i] = dataset[indeces_best_scores[i + train_tot_epoch]]
+    test_labels[i] = labels[indeces_best_scores[i + train_tot_epoch]]
+  return train_dataset, train_labels, test_dataset, test_labels
+
+def filter_ScorEpochs_peggiori_ep_train(dataset, labels, scores, idx, percentage):
+  #train = % epoche peggiori a prescindere dall'utente; test il resto
+  train_tot_epoch = int(percentage * len(idx))
+  test_tot_epoch = len(idx) - train_tot_epoch
+  train_dataset = np.zeros((train_tot_epoch, len(dataset[0])))
+  train_labels = np.zeros(train_tot_epoch)
+  test_dataset = np.zeros((test_tot_epoch, len(dataset[0])))
+  test_labels = np.zeros(test_tot_epoch)
+  indeces_best_scores = np.argsort(scores)
+  for i in range(train_tot_epoch):
+    train_dataset[i] = dataset[indeces_best_scores[i]]
+    train_labels[i] = labels[indeces_best_scores[i]]
+  for i in range(test_tot_epoch):
+    test_dataset[i] = dataset[indeces_best_scores[i + train_tot_epoch]]
+    test_labels[i] = labels[indeces_best_scores[i + train_tot_epoch]]
+  return train_dataset, train_labels, test_dataset, test_labels
