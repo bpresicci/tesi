@@ -28,7 +28,7 @@ def filter_ScorEpochs_media_per_utente(dataset, labels, scores, idx, percentage,
 
 def filter_ScorEpochs_togli_n_ep_peggiori(dataset, labels, scores, percentage):
   #elimino % epoche peggiori a prescindere dall'utente
-  new_tot_epoch = int(percentage * len(idx))
+  new_tot_epoch = int(percentage * len(labels))
   new_dataset = np.zeros((new_tot_epoch, len(dataset[0])))
   new_labels = np.zeros(new_tot_epoch)
   new_scores = np.zeros(new_tot_epoch)
@@ -42,7 +42,7 @@ def filter_ScorEpochs_togli_n_ep_peggiori(dataset, labels, scores, percentage):
 
 def filter_ScorEpochs_togli_random(dataset, labels, scores, percentage):
   #elimino % epoche a caso a prescindere dall'utente
-  new_tot_epoch = int(percentage * len(idx))
+  new_tot_epoch = int(percentage * len(labels))
   new_dataset = np.zeros((new_tot_epoch, len(dataset[0])))
   new_labels = np.zeros(new_tot_epoch)
   new_scores = np.zeros(new_tot_epoch)
@@ -56,7 +56,7 @@ def filter_ScorEpochs_togli_random(dataset, labels, scores, percentage):
 
 def filter_ScorEpochs_togli_n_ep_migliori(dataset, labels, scores, percentage):
   #elimino % epoche peggiori a prescindere dall'utente
-  new_tot_epoch = int(percentage * len(idx))
+  new_tot_epoch = int(percentage * len(labels))
   new_dataset = np.zeros((new_tot_epoch, len(dataset[0])))
   new_labels = np.zeros(new_tot_epoch)
   new_scores = np.zeros(new_tot_epoch)
@@ -69,8 +69,8 @@ def filter_ScorEpochs_togli_n_ep_migliori(dataset, labels, scores, percentage):
 
 def filter_ScorEpochs_migliori_ep_train(dataset, labels, scores, percentage):
   #train = % epoche migliori a prescindere dall'utente; test il resto
-  train_tot_epoch = int(percentage * len(idx))
-  test_tot_epoch = len(idx) - train_tot_epoch
+  train_tot_epoch = int(percentage * len(labels))
+  test_tot_epoch = len(labels) - train_tot_epoch
   train_dataset = np.zeros((train_tot_epoch, len(dataset[0])))
   train_labels = np.zeros(train_tot_epoch)
   test_dataset = np.zeros((test_tot_epoch, len(dataset[0])))
