@@ -131,7 +131,7 @@ def filter_ScorEpochs_togli_random(dataset, labels, scores, idx, percentage, use
             id_des = -subject
           bool_id = idx == id_des
           idx_ep = list(zip(*np.where(idx == id_des)))
-          indeces_random_per_user = np.arange(scores[bool_id])
+          indeces_random_per_user = np.arange(len(scores[bool_id]))
           np.random.shuffle(indeces_random_per_user)
           for i in range(new_tot_epoch_per_user):
             new_dataset = new_dataset + [dataset[idx_ep[indeces_random_per_user[i]]]]
