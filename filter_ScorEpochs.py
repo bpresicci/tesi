@@ -1,5 +1,20 @@
 import numpy as np
 
+def filter_ScorEpochs(dataset, labels, scores, idx, percentage, f, kf, classifiers, user_specific, tot_conditions, subject_start, subject_end):
+  scores_kfold = np.zeros((len(classifiers), kf.get_n_splits(dataset, labels)))
+  X, y, scores = f(dataset, labels, scores, idx, percentage, user_specific, tot_conditions, subject_start, subject_end)
+  for idx_clf in range (len(classifiers)):
+    clf = classifiers[idx_clf]
+    idx_score = 0
+    for train_index, test_index in kf.split(X, y):
+      X_train, X_test = X[train_index], X[test_index]
+      y_train, y_test = y[train_index], y[test_index]
+      clf.fit(X_train, y_train)
+      score = clf.score(X_test, y_test)
+      scores_kfold[idx_clf][idx_score] = score
+      idx_score += 1
+  return scores_kfold
+
 def filter_ScorEpochs_media_per_utente(dataset, labels, scores, idx, percentage, tot_conditions, subject_start, subject_end):
   new_dataset = []
   new_labels = []
