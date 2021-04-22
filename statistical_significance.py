@@ -50,7 +50,7 @@ def create_dataset(conditions, subject_start, subject_end, cfg):
     X_all = np.reshape(X_user_specific, [total_subjects * tot_epochs, tot_channels * tot_samples])
     y_all = np.reshape(y_user_specific, [total_subjects * tot_epochs])
     scores_all = np.reshape(scores_user_specific, [total_subjects * tot_epochs])
-    return X_all, y_all, scores_all
+    return X_all, y_all, scores_all, id
 
 def kfold_nofiltri(names, classifiers, kf, X_all, y_all):
     scores_no_scorEpochs_kfold = np.zeros((len(names), kf.get_n_splits(X_all, y_all)))
@@ -95,7 +95,7 @@ def hold_out_nofiltri(names, classifiers, X_A, y_A, X_B, y_B):
         print("\n")
     return accuracy_no_scorEpochs_ho_mean, accuracy_no_scorEpochs_ho_var
 
-def applica_filtri(names, classifiers, kf, n_random, percentage, conditions, subject_start, subject_end, X_all, y_all, scores_all):
+def applica_filtri(names, classifiers, kf, n_random, percentage, conditions, subject_start, subject_end, X_all, y_all, scores_all, id):
     for user_specific in [False, True]:
         somma_mean = np.zeros(len(names))
         somma_var = np.zeros(len(names))
