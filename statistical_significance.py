@@ -97,8 +97,7 @@ def hold_out_nofiltri(names, classifiers, X_A, y_A, X_B, y_B):
 
 def applica_filtri(names, classifiers, kf, n_random, percentage, conditions, subject_start, subject_end, X_all, y_all, scores_all, id):
     for user_specific in [False, True]:
-        new_tot_epoch = int(percentage * len(y_all))
-        scores_togli_random_kfold = np.zeros((n_random, new_tot_epoch))
+        scores_togli_random_kfold = np.zeros((n_random, len(names), kf.get_n_splits()))
         if user_specific == False:
             scores_togli_n_ep_peggiori_kfold = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_n_ep_peggiori, kf, classifiers, user_specific, conditions, subject_start, subject_end)
             scores_togli_n_ep_migliori_kfold = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_n_ep_migliori, kf, classifiers, user_specific, conditions, subject_start, subject_end)
