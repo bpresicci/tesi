@@ -8,7 +8,8 @@ from tesi.filter_ScorEpochs import filter_ScorEpochs_togli_n_ep_peggiori
 from tesi.filter_ScorEpochs import filter_ScorEpochs_togli_n_ep_migliori
 from tesi.filter_ScorEpochs import filter_ScorEpochs_togli_random
 from tesi.filter_ScorEpochs import filter_ScorEpochs_migliori_ep_train
-from tesi.calculate_acc import accuracy
+from tesi.calculate_acc import accuracy_axis_1
+from tesi.calculate_acc import accuracy_axis_2
 
 
 def create_dataset(conditions, subject_start, subject_end, cfg):
@@ -101,21 +102,21 @@ def applica_filtri(names, classifiers, kf, n_random, percentage, conditions, sub
         if user_specific == False:
             scores_togli_n_ep_peggiori_kfold = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_n_ep_peggiori, kf, classifiers, user_specific, conditions, subject_start, subject_end)
             scores_togli_n_ep_migliori_kfold = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_n_ep_migliori, kf, classifiers, user_specific, conditions, subject_start, subject_end)
-            accuracy_togli_n_ep_peggiori_kfold_mean, accuracy_togli_n_ep_peggiori_kfold_var = accuracy(scores_togli_n_ep_peggiori_kfold)
-            accuracy_togli_n_ep_migliori_kfold_mean, accuracy_togli_n_ep_migliori_kfold_var = accuracy(scores_togli_n_ep_migliori_kfold)
+            accuracy_togli_n_ep_peggiori_kfold_mean, accuracy_togli_n_ep_peggiori_kfold_var = accuracy_axis_1(scores_togli_n_ep_peggiori_kfold)
+            accuracy_togli_n_ep_migliori_kfold_mean, accuracy_togli_n_ep_migliori_kfold_var = accuracy_axis_1(scores_togli_n_ep_migliori_kfold)
             for i in range(n_random):
                 scores_togli_random_kfold[i] = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_random, kf, classifiers, user_specific, conditions, subject_start, subject_end)
-            accuracy_togli_random_kfold_mean, accuracy_togli_random_kfold_var = accuracy(scores_togli_random_kfold)
+            accuracy_togli_random_kfold_mean, accuracy_togli_random_kfold_var = accuracy_axis_2(scores_togli_random_kfold)
         else:
             scores_togli_random_kfold_us = []
             scores_togli_n_ep_peggiori_kfold_us = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_n_ep_peggiori, kf, classifiers, user_specific, conditions, subject_start, subject_end)
             scores_togli_n_ep_migliori_kfold_us = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_n_ep_migliori, kf, classifiers, user_specific, conditions, subject_start, subject_end)
-            accuracy_togli_n_ep_peggiori_kfold_mean_us, accuracy_togli_n_ep_peggiori_kfold_var_us = accuracy(scores_togli_n_ep_peggiori_kfold_us)
-            accuracy_togli_n_ep_migliori_kfold_mean_us, accuracy_togli_n_ep_migliori_kfold_var_us = accuracy(scores_togli_n_ep_migliori_kfold_us)
+            accuracy_togli_n_ep_peggiori_kfold_mean_us, accuracy_togli_n_ep_peggiori_kfold_var_us = accuracy_axis_1(scores_togli_n_ep_peggiori_kfold_us)
+            accuracy_togli_n_ep_migliori_kfold_mean_us, accuracy_togli_n_ep_migliori_kfold_var_us = accuracy_axis_1(scores_togli_n_ep_migliori_kfold_us)
             for i in range(n_random):
                 scores_togli_random_kfold_us = scores_togli_random_kfold_us + [filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_random, kf, classifiers, user_specific, conditions, subject_start, subject_end)]
             scores_togli_random_kfold_us = np.array(scores_togli_random_kfold_us)
-            accuracy_togli_random_kfold_mean_us, accuracy_togli_random_kfold_var_us = accuracy(scores_togli_random_kfold_us)
+            accuracy_togli_random_kfold_mean_us, accuracy_togli_random_kfold_var_us = accuracy_axis_2(scores_togli_random_kfold_us)
     return scores_togli_n_ep_peggiori_kfold, accuracy_togli_n_ep_peggiori_kfold_mean, accuracy_togli_n_ep_peggiori_kfold_var, scores_togli_n_ep_migliori_kfold, accuracy_togli_n_ep_migliori_kfold_mean, accuracy_togli_n_ep_migliori_kfold_var, scores_togli_random_kfold, accuracy_togli_random_kfold_mean, accuracy_togli_random_kfold_var, scores_togli_n_ep_peggiori_kfold_us, accuracy_togli_n_ep_peggiori_kfold_mean_us, accuracy_togli_n_ep_peggiori_kfold_var_us, scores_togli_n_ep_migliori_kfold_us, accuracy_togli_n_ep_migliori_kfold_mean_us, accuracy_togli_n_ep_migliori_kfold_var_us, scores_togli_random_kfold_us, accuracy_togli_random_kfold_mean_us,accuracy_togli_random_kfold_var_us
 
 def create_KNN_matrices(perc, names, n_random, kf):
