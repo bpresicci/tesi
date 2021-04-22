@@ -97,30 +97,24 @@ def hold_out_nofiltri(names, classifiers, X_A, y_A, X_B, y_B):
 
 def applica_filtri(names, classifiers, kf, n_random, percentage, conditions, subject_start, subject_end, X_all, y_all, scores_all, id):
     for user_specific in [False, True]:
-        somma_mean = np.zeros(len(names))
-        somma_var = np.zeros(len(names))
+        new_tot_epoch = int(percentage * len(y_all))
+        scores_togli_random_kfold = np.zeros((n_random, new_tot_epoch))
         if user_specific == False:
             scores_togli_n_ep_peggiori_kfold = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_n_ep_peggiori, kf, classifiers, user_specific, conditions, subject_start, subject_end)
             scores_togli_n_ep_migliori_kfold = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_n_ep_migliori, kf, classifiers, user_specific, conditions, subject_start, subject_end)
             accuracy_togli_n_ep_peggiori_kfold_mean, accuracy_togli_n_ep_peggiori_kfold_var = accuracy(scores_togli_n_ep_peggiori_kfold)
             accuracy_togli_n_ep_migliori_kfold_mean, accuracy_togli_n_ep_migliori_kfold_var = accuracy(scores_togli_n_ep_migliori_kfold)
             for i in range(n_random):
-                scores_togli_random_kfold = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_random, kf, classifiers, user_specific, conditions, subject_start, subject_end)
-                acc_togli_random_kfold_mean, acc_togli_random_kfold_var = accuracy(scores_togli_random_kfold)
-                somma_mean = somma_mean + acc_togli_random_kfold_mean
-                somma_var = somma_var + acc_togli_random_kfold_var
-            accuracy_togli_random_kfold_mean = somma_mean / n_random
-            accuracy_togli_random_kfold_var = somma_var / n_random
+                scores_togli_random_kfold[i] = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_random, kf, classifiers, user_specific, conditions, subject_start, subject_end)
+            accuracy_togli_random_kfold_mean, accuracy_togli_random_kfold_var = accuracy(scores_togli_random_kfold)
         else:
+            scores_togli_random_kfold_us = []
             scores_togli_n_ep_peggiori_kfold_us = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_n_ep_peggiori, kf, classifiers, user_specific, conditions, subject_start, subject_end)
             scores_togli_n_ep_migliori_kfold_us = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_n_ep_migliori, kf, classifiers, user_specific, conditions, subject_start, subject_end)
             accuracy_togli_n_ep_peggiori_kfold_mean_us, accuracy_togli_n_ep_peggiori_kfold_var_us = accuracy(scores_togli_n_ep_peggiori_kfold_us)
             accuracy_togli_n_ep_migliori_kfold_mean_us, accuracy_togli_n_ep_migliori_kfold_var_us = accuracy(scores_togli_n_ep_migliori_kfold_us)
             for i in range(n_random):
-                scores_togli_random_kfold_us = filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_random, kf, classifiers, user_specific, conditions, subject_start, subject_end)
-                acc_togli_random_kfold_mean_us, acc_togli_random_kfold_var_us = accuracy(scores_togli_random_kfold_us)
-                somma_mean = somma_mean + acc_togli_random_kfold_mean_us
-                somma_var = somma_var + acc_togli_random_kfold_var_us
-            accuracy_togli_random_kfold_mean_us = somma_mean / n_random
-            accuracy_togli_random_kfold_var_us = somma_var / n_random
-    return accuracy_togli_n_ep_peggiori_kfold_mean, accuracy_togli_n_ep_peggiori_kfold_var, accuracy_togli_n_ep_migliori_kfold_mean, accuracy_togli_n_ep_migliori_kfold_var, accuracy_togli_random_kfold_mean, accuracy_togli_random_kfold_var, accuracy_togli_n_ep_peggiori_kfold_mean_us, accuracy_togli_n_ep_peggiori_kfold_var_us, accuracy_togli_n_ep_migliori_kfold_mean_us, accuracy_togli_n_ep_migliori_kfold_var_us, accuracy_togli_random_kfold_mean_us,accuracy_togli_random_kfold_var_us
+                scores_togli_random_kfold_us = scores_togli_random_kfold_us = [filter_ScorEpochs(X_all, y_all, scores_all, id, percentage, filter_ScorEpochs_togli_random, kf, classifiers, user_specific, conditions, subject_start, subject_end)]
+            scores_togli_random_kfold_us = np.array(scores_togli_random_kfold_us)
+            accuracy_togli_random_kfold_mean_us, accuracy_togli_random_kfold_var_us = accuracy(scores_togli_random_kfold_us)
+    return scores_togli_n_ep_peggiori_kfold, accuracy_togli_n_ep_peggiori_kfold_mean, accuracy_togli_n_ep_peggiori_kfold_var, scores_togli_n_ep_migliori_kfold, accuracy_togli_n_ep_migliori_kfold_mean, accuracy_togli_n_ep_migliori_kfold_var, scores_togli_random_kfold, accuracy_togli_random_kfold_mean, accuracy_togli_random_kfold_var, scores_togli_n_ep_peggiori_kfold_us, accuracy_togli_n_ep_peggiori_kfold_mean_us, accuracy_togli_n_ep_peggiori_kfold_var_us, scores_togli_n_ep_migliori_kfold_us, accuracy_togli_n_ep_migliori_kfold_mean_us, accuracy_togli_n_ep_migliori_kfold_var_us, scores_togli_random_kfold_us, accuracy_togli_random_kfold_mean_us,accuracy_togli_random_kfold_var_us
