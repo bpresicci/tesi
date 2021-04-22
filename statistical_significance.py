@@ -117,3 +117,19 @@ def applica_filtri(names, classifiers, kf, n_random, percentage, conditions, sub
             scores_togli_random_kfold_us = np.array(scores_togli_random_kfold_us)
             accuracy_togli_random_kfold_mean_us, accuracy_togli_random_kfold_var_us = accuracy(scores_togli_random_kfold_us)
     return scores_togli_n_ep_peggiori_kfold, accuracy_togli_n_ep_peggiori_kfold_mean, accuracy_togli_n_ep_peggiori_kfold_var, scores_togli_n_ep_migliori_kfold, accuracy_togli_n_ep_migliori_kfold_mean, accuracy_togli_n_ep_migliori_kfold_var, scores_togli_random_kfold, accuracy_togli_random_kfold_mean, accuracy_togli_random_kfold_var, scores_togli_n_ep_peggiori_kfold_us, accuracy_togli_n_ep_peggiori_kfold_mean_us, accuracy_togli_n_ep_peggiori_kfold_var_us, scores_togli_n_ep_migliori_kfold_us, accuracy_togli_n_ep_migliori_kfold_mean_us, accuracy_togli_n_ep_migliori_kfold_var_us, scores_togli_random_kfold_us, accuracy_togli_random_kfold_mean_us,accuracy_togli_random_kfold_var_us
+
+def create_KNN_matrices(perc, names, n_random, kf):
+    KNN_p = np.zeros((len(perc), len(names)))
+    KNN_m = np.zeros((len(perc), len(names)))
+    KNN_r = np.zeros((len(perc), n_random, len(names)))
+    KNN_us_p = np.zeros((len(perc), len(names)))
+    KNN_us_m = np.zeros((len(perc), len(names)))
+    KNN_us_r = np.zeros((len(perc), n_random, len(names)))
+
+    KNN_p_scores = np.zeros((len(perc), len(names), kf.get_n_splits()))
+    KNN_m_scores = np.zeros((len(perc), len(names), kf.get_n_splits()))
+    KNN_r_scores = np.zeros((len(perc), n_random, len(names), kf.get_n_splits()))
+    KNN_us_p_scores = np.zeros((len(perc), len(names), kf.get_n_splits()))
+    KNN_us_m_scores = np.zeros((len(perc), len(names), kf.get_n_splits()))
+    KNN_us_r_scores = np.zeros((len(perc), n_random, len(names), kf.get_n_splits()))
+    return KNN_p_scores, KNN_p, KNN_m_scores, KNN_m, KNN_r_scores, KNN_r, KNN_us_p_scores, KNN_us_p, KNN_us_m_scores, KNN_us_m, KNN_us_r_scores, KNN_us_r
