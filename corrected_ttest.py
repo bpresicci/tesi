@@ -8,8 +8,8 @@ from statistics import stdev
 
 def compute_n_folds(labels, percentage, kf):
   n_splits = kf.get_n_splits()
-  n_training_folds = ceil(len(y_all) * percentage *  (n_splits - 1) / n_splits)
-  n_test_folds = int((len(y_all) * percentage) - n_training_folds)
+  n_training_folds = ceil(len(labels) * percentage *  (n_splits - 1) / n_splits)
+  n_test_folds = int((len(labels) * percentage) - n_training_folds)
   return n_training_folds, n_test_folds
 
 def corrected_dependent_ttest(data1, data2, n_training_folds, n_test_folds, alpha): #è per davvero uguale alla formula
