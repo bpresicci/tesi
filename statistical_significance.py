@@ -134,3 +134,10 @@ def create_KNN_matrices(perc, names, n_random, kf):
     KNN_us_m_scores = np.zeros((len(perc), len(names), kf.get_n_splits()))
     KNN_us_r_scores = np.zeros((len(perc), n_random, len(names), kf.get_n_splits()))
     return KNN_p_scores, KNN_p, KNN_m_scores, KNN_m, KNN_r_scores, KNN_r, KNN_us_p_scores, KNN_us_p, KNN_us_m_scores, KNN_us_m, KNN_us_r_scores, KNN_us_r
+
+def lista_t_p(percentage):
+    n1 = 'Rimozione peggiori contro rimozione casuale, con %s' % percentage
+    n2 = 'Rimozione peggiori contro rimozione migliori, con %s' % percentage
+    n3 = 'Rimozione migliori contro rimozione casuale, con %s' % percentage
+    lista_prove = [n1, n2, n3]
+    return lista_prove
