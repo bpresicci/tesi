@@ -37,6 +37,21 @@ def crea_liste(names):
     p_value3_us = np.zeros(len(names))
     return t_value1, t_value2, t_value3, p_value1, p_value2, p_value3, t_value1_us, t_value2_us, t_value3_us, p_value1_us, p_value2_us, p_value3_us
 
+def crea_KNN(perc, names, kf, n_random):
+    KNN_p_scores = np.zeros((len(perc), len(names), kf.get_n_splits()))
+    KNN_m_scores = np.zeros((len(perc), len(names), kf.get_n_splits()))
+    KNN_r_scores_all = np.zeros((len(perc), n_random, len(names), kf.get_n_splits()))
+    KNN_us_p_scores = np.zeros((len(perc), len(names), kf.get_n_splits()))
+    KNN_us_m_scores = np.zeros((len(perc), len(names), kf.get_n_splits()))
+    KNN_us_r_scores_all = np.zeros((len(perc), n_random, len(names), kf.get_n_splits()))
+    KNN_p = np.zeros((len(perc), len(names)))
+    KNN_m = np.zeros((len(perc), len(names)))
+    KNN_r = np.zeros((len(perc), n_random, len(names)))
+    KNN_us_p = np.zeros((len(perc), len(names)))
+    KNN_us_m = np.zeros((len(perc), len(names)))
+    KNN_us_r = np.zeros((len(perc), n_random, len(names)))
+    return KNN_p_scores, KNN_m_scores, KNN_r_scores_all, KNN_us_p_scores, KNN_us_m_scores, KNN_us_r_scores_all, KNN_p, KNN_m, KNN_r, KNN_us_p, KNN_us_m, KNN_us_r
+
 def do_corrected_ttest(error_p, error_m, error_r, kf, alpha):
     t_value1, df, cv, p_value1 = corrected_dependent_ttest_kfold(error_p, error_r, kf.get_n_splits(), alpha)
     t_value2, df, cv, p_value2 = corrected_dependent_ttest_kfold(error_p, error_m, kf.get_n_splits(), alpha)
