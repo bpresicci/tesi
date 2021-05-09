@@ -1,10 +1,22 @@
 from scipy import signal as sig
 import numpy as np
+from scipy import fft
 
 def feature_extraction(cfg, freq_range, nCh, epoch, idx_ep):
     epLen = cfg['windowL'] * cfg['fs']  # Number of samples of each epoch (for each channel)
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
     nEp = len(idx_ep)  # Total number of epochs
+
+    segLen = round(epLen/8)
+    check_freqs = fft.rfftfreq(segLen, 1/cfg['fs'])
+    check = 0
+    for value, i in zip(check_freqs, range(len(check_freqs))):
+      if value >= cfg['freqRange'][0] and value <= cfg['freqRange'][1]:
+        check += 1
+    if check < 9:
+      fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
+      segLen = 1.0/(fix * 1/cfg['fs'])
+
     for e in range(nEp):
         for c in range(nCh):
             # compute power spectrum
@@ -23,10 +35,21 @@ def feature_extraction_1(cfg, freq_range, nCh, epoch):
     epLen = cfg['windowL'] * cfg['fs']  # Number of samples of each epoch (for each channel)
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
     nEp = len(epoch)  # Total number of epochs
+
+    segLen = round(epLen/8)
+    check_freqs = fft.rfftfreq(segLen, 1/cfg['fs'])
+    check = 0
+    for value, i in zip(check_freqs, range(len(check_freqs))):
+      if value >= cfg['freqRange'][0] and value <= cfg['freqRange'][1]:
+        check += 1
+    if check < 9:
+      fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
+      segLen = 1.0/(fix * 1/cfg['fs'])
+
     for e in range(nEp):
         for c in range(nCh):
             # compute power spectrum
-            f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=round(epLen / 8), detrend=False)  # The nperseg allows the MATLAB pwelch correspondence
+            f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=segLen, detrend=False)  # The nperseg allows the MATLAB pwelch correspondence
             if c == 0 and e == 0:  # The various parameters are obtained in the first interation
                 psd, idx_min, idx_max, nFreq = _spectrum_parameters(f, freq_range, aux_pxx, nEp, nCh)
                 if smoothing_condition:
