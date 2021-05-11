@@ -17,6 +17,34 @@ def feature_extraction(cfg, freq_range, nCh, epoch, idx_ep):
       fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
       segLen = 1.0/(fix * 1/cfg['fs'])
 
+# L'array di frequenze restituite da sig.welch() ("Array of sample frequencies") dipende dal parametro nperseg, che è la lunghezza di ogni segmento. Volendo ottenere un numero
+# sufficiente di valori di PSD da usare per ricavare i coefficienti di Spearman, mantenendo una finestra di osservazione (in secondi, cfg['windowL'] piccola
+# ed una ridotta banda di frequenza (per esempio la banda alpha, [8, 13]) si deve modificare il calcolo di nperseg.
+# La funzione chiamata da sig.welch() per ottenere le frequenze è fft.rfftfreq() di scipy, ma numpy ha una funzione identica che fa gli stessi calcoli.
+# Il codice sorgente di numpy.fft.rfftfreq() (https://github.com/numpy/numpy/blob/v1.20.0/numpy/fft/helper.py#L172-L221) comprende:
+
+# def rfftfreq(n, d=1.0):
+#   if not isinstance(n, integer_types):
+#       raise ValueError("n should be an integer")
+#   val = 1.0/(n*d)
+#   N = n//2 + 1
+#   results = arange(0, N, dtype=int)
+#   return results * val
+
+# Parameters
+#    ----------
+#    n : int
+#       Window length.
+#   d : scalar, optional
+#       Sample spacing (inverse of the sampling rate). Defaults to 1.
+#   Returns
+#   -------
+#   f : ndarray
+#       Array of length ``n//2 + 1`` containing the sample frequencies.
+
+# Quindi se si vuole imporre che
+# len(results * val) >= 9 
+# si deve modificare il valore di val
     for e in range(nEp):
         for c in range(nCh):
             # compute power spectrum
