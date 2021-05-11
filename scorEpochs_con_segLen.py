@@ -93,7 +93,7 @@ def scorEpochs(cfg, data):
     freqRange = cfg['freqRange']               # Cut frequencies
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1 # True if the smoothing has to be executed, 0 otherwise
 
-    segLen = round(epLen/8)
+    segLen = epLen/8
     check_freqs = fft.rfftfreq(segLen, 1/cfg['fs'])
     check = 0
     for value, i in zip(check_freqs, range(len(check_freqs))):
@@ -108,7 +108,7 @@ def scorEpochs(cfg, data):
         for c in range(nCh):
             epoch[e][c][0:epLen] = data[c][idx_ep[e]:idx_ep[e]+epLen]
             # compute power spectrum
-            f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=segLen, detrend=False) # The nperseg allows the MATLAB pwelch correspondence
+            f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=round(segLen), detrend=False) # The nperseg allows the MATLAB pwelch correspondence
             if c == 0 and e == 0: # The various parameters are obtained in the first interation
                 pxx, idx_min, idx_max, nFreq = _spectrum_parameters(f, freqRange, aux_pxx, nEp, nCh)
                 if smoothing_condition:
