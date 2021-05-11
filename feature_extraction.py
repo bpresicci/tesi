@@ -2,12 +2,12 @@ from scipy import signal as sig
 import numpy as np
 from scipy import fft
 
-def feature_extraction(cfg, freq_range, nCh, epoch, idx_ep):
+def feature_extraction_1(cfg, freq_range, nCh, epoch):
     epLen = cfg['windowL'] * cfg['fs']  # Number of samples of each epoch (for each channel)
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
-    nEp = len(idx_ep)  # Total number of epochs
+    nEp = len(epoch)  # Total number of epochs
 
-    segLen = round(epLen/8)
+    segLen = epLen/8
     check_freqs = fft.rfftfreq(segLen, 1/cfg['fs'])
     check = 0
     for value, i in zip(check_freqs, range(len(check_freqs))):
@@ -23,14 +23,6 @@ def feature_extraction(cfg, freq_range, nCh, epoch, idx_ep):
 # La funzione chiamata da sig.welch() per ottenere le frequenze è fft.rfftfreq() di scipy, ma numpy ha una funzione identica che fa gli stessi calcoli.
 # Il codice sorgente di numpy.fft.rfftfreq() (https://github.com/numpy/numpy/blob/v1.20.0/numpy/fft/helper.py#L172-L221) comprende:
 
-# def rfftfreq(n, d=1.0):
-#   if not isinstance(n, integer_types):
-#       raise ValueError("n should be an integer")
-#   val = 1.0/(n*d)
-#   N = n//2 + 1
-#   results = arange(0, N, dtype=int)
-#   return results * val
-
 # Parameters
 #    ----------
 #    n : int
@@ -42,42 +34,33 @@ def feature_extraction(cfg, freq_range, nCh, epoch, idx_ep):
 #   f : ndarray
 #       Array of length ``n//2 + 1`` containing the sample frequencies.
 
-# Quindi se si vuole imporre che
-# len(results * val) >= 9 
-# si deve modificare il valore di val
-    for e in range(nEp):
-        for c in range(nCh):
-            # compute power spectrum
-            f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=round(epLen / 8), detrend=False)  # The nperseg allows the MATLAB pwelch correspondence
-            if c == 0 and e == 0:  # The various parameters are obtained in the first interation
-                psd, idx_min, idx_max, nFreq = _spectrum_parameters(f, freq_range, aux_pxx, nEp, nCh)
-                if smoothing_condition:
-                    window_range, initial_f, final_f = _smoothing_parameters(cfg['smoothFactor'], nFreq)
-            if smoothing_condition:
-                psd[e][c] = _movmean(aux_pxx, cfg['smoothFactor'], initial_f, final_f, nFreq, idx_min, idx_max)
-            else:
-                psd[e][c] = aux_pxx[idx_min:idx_max + 1]  # pxx takes the only interested spectrum-related sub-array
-    return psd
+# def rfftfreq(n, d=1.0):
+#   if not isinstance(n, integer_types):
+#       raise ValueError("n should be an integer")
+#   val = 1.0/(n*d)
+#   N = n//2 + 1
+#   results = arange(0, N, dtype=int)
+#   return results * val
 
-def feature_extraction_1(cfg, freq_range, nCh, epoch):
-    epLen = cfg['windowL'] * cfg['fs']  # Number of samples of each epoch (for each channel)
-    smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
-    nEp = len(epoch)  # Total number of epochs
-
-    segLen = round(epLen/8)
-    check_freqs = fft.rfftfreq(segLen, 1/cfg['fs'])
-    check = 0
-    for value, i in zip(check_freqs, range(len(check_freqs))):
-      if value >= cfg['freqRange'][0] and value <= cfg['freqRange'][1]:
-        check += 1
-    if check < 9:
-      fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
-      segLen = 1.0/(fix * 1/cfg['fs'])
+# Sia cfg['freqRange'] = [low, high], se si vuole imporre che in tale banda vi siano almeno 9 frequenze associate ad altrettanti valori di PSD, si deve modificare
+# il valore di val, perchè è la distanza fra una frequenza e quella successiva nell'array f restituito in output da sig.welch()
+# (si può verificare che f[1] - f[0] = val). d è l'inverso di fs, n è nperseg, quindi:
+# val = 1/(n*d) = fs/nperseg
+# numero di frequenze in cfg['freqRange'] = (high - low) / val
+# Quindi:
+# (high - low) / val >= 9
+# val <= (high - low) / 9
+# da cui:
+# fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
+# val = fs / nperseg -> nperseg = fs/val = 1/(val * d) con d = 1/fs
+# da cui: 
+# segLen = 1.0/(fix * 1/cfg['fs'])
+# Così si ottengono un array f e pxx da sig.welch() la cui lunghezza nell'intervallo definito da cfg['freqRange'] è almeno 9.
 
     for e in range(nEp):
         for c in range(nCh):
             # compute power spectrum
-            f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=segLen, detrend=False)  # The nperseg allows the MATLAB pwelch correspondence
+            f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=round(segLen), detrend=False)  # The nperseg allows the MATLAB pwelch correspondence
             if c == 0 and e == 0:  # The various parameters are obtained in the first interation
                 psd, idx_min, idx_max, nFreq = _spectrum_parameters(f, freq_range, aux_pxx, nEp, nCh)
                 if smoothing_condition:
