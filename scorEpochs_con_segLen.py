@@ -93,7 +93,7 @@ def scorEpochs(cfg, data):
     freqRange = cfg['freqRange']               # Cut frequencies
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1 # True if the smoothing has to be executed, 0 otherwise
 
-    segLen = epLen/8
+    segLen = round(epLen/8)
     check_freqs = fft.rfftfreq(segLen, 1/cfg['fs'])
     check = 0
     for value, i in zip(check_freqs, range(len(check_freqs))):
@@ -102,13 +102,13 @@ def scorEpochs(cfg, data):
     if check < 9:
       print("\nNot enough observations to compute Spearman's correlation. nperseq calculation is being changed to keep the desired input. Please change inputs if you want to keep the same formula for nperseq.\n")
       fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
-      segLen = 1.0/(fix * 1/cfg['fs'])
+      segLen = round(1.0/(fix * 1/cfg['fs']))
 
     for e in range(nEp):
         for c in range(nCh):
             epoch[e][c][0:epLen] = data[c][idx_ep[e]:idx_ep[e]+epLen]
             # compute power spectrum
-            f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=round(segLen), detrend=False) # The nperseg allows the MATLAB pwelch correspondence
+            f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=segLen, detrend=False) # The nperseg allows the MATLAB pwelch correspondence
             if c == 0 and e == 0: # The various parameters are obtained in the first interation
                 pxx, idx_min, idx_max, nFreq = _spectrum_parameters(f, freqRange, aux_pxx, nEp, nCh)
                 if smoothing_condition:
