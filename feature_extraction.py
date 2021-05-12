@@ -7,7 +7,7 @@ def feature_extraction_1(cfg, freq_range, nCh, epoch):
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
     nEp = len(epoch)  # Total number of epochs
 
-    segLen = epLen/8
+    segLen = round(epLen/8)
     check_freqs = fft.rfftfreq(segLen, 1/cfg['fs'])
     check = 0
     for value, i in zip(check_freqs, range(len(check_freqs))):
@@ -15,7 +15,7 @@ def feature_extraction_1(cfg, freq_range, nCh, epoch):
         check += 1
     if check < 9:
       fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
-      segLen = 1.0/(fix * 1/cfg['fs'])
+      segLen = round(1.0/(fix * 1/cfg['fs']))
 
 # L'array di frequenze restituite da sig.welch() ("Array of sample frequencies") dipende dal parametro nperseg, che è la lunghezza di ogni segmento. Volendo ottenere un numero
 # sufficiente di valori di PSD da usare per ricavare i coefficienti di Spearman, mantenendo una finestra di osservazione (in secondi, cfg['windowL'] piccola
@@ -60,7 +60,7 @@ def feature_extraction_1(cfg, freq_range, nCh, epoch):
     for e in range(nEp):
         for c in range(nCh):
             # compute power spectrum
-            f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=round(segLen), detrend=False)  # The nperseg allows the MATLAB pwelch correspondence
+            f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=segLen, detrend=False)  # The nperseg allows the MATLAB pwelch correspondence
             if c == 0 and e == 0:  # The various parameters are obtained in the first interation
                 psd, idx_min, idx_max, nFreq = _spectrum_parameters(f, freq_range, aux_pxx, nEp, nCh)
                 if smoothing_condition:
