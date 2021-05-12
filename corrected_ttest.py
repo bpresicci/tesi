@@ -37,3 +37,19 @@ def corrected_dependent_ttest_kfold(data1, data2, k, alpha): #formule Kuncheva
     p = 2 * t.cdf(-(abs(divisor)/denominator), df)
     # return everything
     return t_stat, df, cv, p
+
+def corrected_dependent_ttest_kfold_one_tail(data1, data2, k, alpha): #formule Kuncheva
+    n = len(data1) #n è il numero di campioni
+    differences = [(data1[i]-data2[i]) for i in range(n)] #xij = aij − bij for fold i and run j
+    sd = stdev(differences)
+    divisor = 1 / n * sum(differences)
+    denominator = sqrt((2 * k - 1) / (k * (k - 1))) * sd
+    t_stat = divisor / denominator
+    # degrees of freedom
+    df = n - 1
+    #calculate the critical value
+    cv = t.ppf(1.0 - alpha, df)
+    # calculate the p-value
+    p = t.cdf(t_stat, df)
+    # return everything
+    return t_stat, df, cv, p
