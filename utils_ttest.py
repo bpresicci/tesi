@@ -2,6 +2,7 @@ from math import ceil
 import numpy as np
 import pandas as pd
 from tesi.corrected_ttest import corrected_dependent_ttest_kfold
+from tesi.corrected_ttest import corrected_dependent_ttest_kfold_one_tail
 
 def lista_t_p(percentage):
     n1 = 'Rimozione peggiori contro rimozione casuale, con %s' % percentage
@@ -56,6 +57,12 @@ def do_corrected_ttest(error_p, error_m, error_r, kf, alpha):
     t_value1, df, cv, p_value1 = corrected_dependent_ttest_kfold(error_p, error_r, kf.get_n_splits(), alpha)
     t_value2, df, cv, p_value2 = corrected_dependent_ttest_kfold(error_p, error_m, kf.get_n_splits(), alpha)
     t_value3, df, cv, p_value3 = corrected_dependent_ttest_kfold(error_m, error_r, kf.get_n_splits(), alpha)
+    return t_value1, t_value2, t_value3, p_value1, p_value2, p_value3, df, cv
+
+def do_corrected_ttest_one_tail(error_p, error_m, error_r, kf, alpha):
+    t_value1, df, cv, p_value1 = corrected_dependent_ttest_kfold_one_tail(error_p, error_r, kf.get_n_splits(), alpha)
+    t_value2, df, cv, p_value2 = corrected_dependent_ttest_kfold_one_tail(error_p, error_m, kf.get_n_splits(), alpha)
+    t_value3, df, cv, p_value3 = corrected_dependent_ttest_kfold_one_tail(error_r, error_m, kf.get_n_splits(), alpha)
     return t_value1, t_value2, t_value3, p_value1, p_value2, p_value3, df, cv
 
 def concatena_current(t_value1, t_value2, t_value3, t_value1_us, t_value2_us, t_value3_us, p_value1, p_value2, p_value3, p_value1_us, p_value2_us, p_value3_us):
