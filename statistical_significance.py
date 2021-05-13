@@ -11,7 +11,7 @@ from tesi.calculate_acc import accuracy_axis_1
 from tesi.calculate_acc import accuracy_axis_2
 
 
-def create_dataset(conditions, subject_start, subject_end, cfg, f_band):
+def create_dataset(conditions, subject_start, subject_end, cfg, f_band, check_nperseg):
     X_user_specific = []
     y_user_specific = []
     scores_user_specific = []
@@ -28,7 +28,7 @@ def create_dataset(conditions, subject_start, subject_end, cfg, f_band):
                     y_per_epoch = np.ones(len(epoch))
                 else:
                     y_per_epoch = np.zeros(len(epoch))
-                psd = feature_extraction(cfg, f_band, nCh, epoch)
+                psd = feature_extraction(cfg, f_band, nCh, epoch, check_nperseg)
                 X_user_specific = X_user_specific + [psd]
                 y_user_specific = y_user_specific + [y_per_epoch]
                 scores_user_specific = scores_user_specific + [scores]
