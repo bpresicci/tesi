@@ -2,7 +2,7 @@ from scipy import signal as sig
 import numpy as np
 from scipy import fft
 
-def feature_extraction_1(cfg, freq_range, nCh, epoch):
+def feature_extraction(cfg, freq_range, nCh, epoch):
     epLen = cfg['windowL'] * cfg['fs']  # Number of samples of each epoch (for each channel)
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
     nEp = len(epoch)  # Total number of epochs
