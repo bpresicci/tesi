@@ -2,20 +2,21 @@ from scipy import signal as sig
 import numpy as np
 from scipy import fft
 
-def feature_extraction(cfg, freq_range, nCh, epoch):
+def feature_extraction(cfg, freq_range, nCh, epoch, check_nperseg):
     epLen = cfg['windowL'] * cfg['fs']  # Number of samples of each epoch (for each channel)
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
     nEp = len(epoch)  # Total number of epochs
 
     segLen = round(epLen/8)
-    check_freqs = fft.rfftfreq(segLen, 1/cfg['fs'])
-    check = 0
-    for value, i in zip(check_freqs, range(len(check_freqs))):
-      if value >= cfg['freqRange'][0] and value <= cfg['freqRange'][1]:
-        check += 1
-    if check < 9:
-      fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
-      segLen = round(1.0/(fix * 1/cfg['fs']))
+    if check_nperseg:
+      check_freqs = fft.rfftfreq(segLen, 1/cfg['fs'])
+      check = 0
+      for value, i in zip(check_freqs, range(len(check_freqs))):
+        if value >= cfg['freqRange'][0] and value <= cfg['freqRange'][1]:
+          check += 1
+      if check < 9:
+        fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
+        segLen = round(1.0/(fix * 1/cfg['fs']))
 
 # L'array di frequenze restituite da sig.welch() ("Array of sample frequencies") dipende dal parametro nperseg, che è la lunghezza di ogni segmento. Volendo ottenere un numero
 # sufficiente di valori di PSD da usare per ricavare i coefficienti di Spearman, mantenendo una finestra di osservazione (in secondi, cfg['windowL'] piccola
