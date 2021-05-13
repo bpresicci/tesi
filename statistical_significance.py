@@ -1,7 +1,7 @@
 import numpy as np
 import mne
 from tesi.find_name_file_and_label import * #specific for this dataset
-from tesi.feature_extraction import feature_extraction_1
+from tesi.feature_extraction import feature_extraction
 from scorepochs.Python.scorEpochs import scorEpochs
 from tesi.filter_ScorEpochs import filter_ScorEpochs
 from tesi.filter_ScorEpochs import filter_ScorEpochs_togli_n_ep_peggiori
@@ -11,7 +11,7 @@ from tesi.calculate_acc import accuracy_axis_1
 from tesi.calculate_acc import accuracy_axis_2
 
 
-def create_dataset(conditions, subject_start, subject_end, cfg):
+def create_dataset(conditions, subject_start, subject_end, cfg, f_band):
     X_user_specific = []
     y_user_specific = []
     scores_user_specific = []
@@ -28,7 +28,7 @@ def create_dataset(conditions, subject_start, subject_end, cfg):
                     y_per_epoch = np.ones(len(epoch))
                 else:
                     y_per_epoch = np.zeros(len(epoch))
-                psd = feature_extraction_1(cfg, cfg['freqRange'], nCh, epoch)
+                psd = feature_extraction(cfg, f_band, nCh, epoch)
                 X_user_specific = X_user_specific + [psd]
                 y_user_specific = y_user_specific + [y_per_epoch]
                 scores_user_specific = scores_user_specific + [scores]
