@@ -143,7 +143,7 @@ def split_epoch(X, srate, t_epoch_lenght, t_discard=0):
 
     epoch_lenght = t_epoch_lenght * srate  # lunghezza epoca  espressa in numero di campioni
 
-    n_epochs = int((n_sample - i_0 - 1) / epoch_lenght)
+    n_epochs = round((n_sample - i_0 - 1) / epoch_lenght)
 
     epochs = []
     for i_epoch in range(n_epochs):
