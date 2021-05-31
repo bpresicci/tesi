@@ -114,7 +114,7 @@ def filter_ScorEpochs_togli_n_ep_migliori(dataset, labels, scores, idx, percenta
     new_labels = np.zeros(new_tot_epoch)
     new_scores = np.zeros(new_tot_epoch)
     indeces_best_scores = np.argsort(scores)
-    for i in range(new_tot_epoch)):
+    for i in range(new_tot_epoch):
       if idx[indeces_best_scores[j]] > 0 and cnt_eo < max_eo:
         new_dataset[i] = dataset[indeces_best_scores[j]]
         new_labels[i] = labels[indeces_best_scores[j]]
