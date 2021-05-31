@@ -47,6 +47,7 @@ def filter_ScorEpochs_togli_n_ep_peggiori(dataset, labels, scores, idx, percenta
     cnt_ec = 0
     cnt_eo = 0
     cnt_new_len = 0
+    j = 0
     new_tot_epoch = int(percentage * len(labels))
     max_ec = int(new_tot_epoch / 2)
     max_eo = new_tot_epoch - max_ec
@@ -55,24 +56,23 @@ def filter_ScorEpochs_togli_n_ep_peggiori(dataset, labels, scores, idx, percenta
     new_scores = np.zeros(new_tot_epoch)
     indeces_best_scores = np.argsort(scores)
     indeces_best_scores = indeces_best_scores[::-1]
-    for i in range(len(labels)):
-      if cnt_new_len < new_tot_epoch:
-        if idx[indeces_best_scores[i]] > 0 and cnt_eo < max_eo:
-          new_dataset[i] = dataset[indeces_best_scores[i]]
-          new_labels[i] = labels[indeces_best_scores[i]]
-          new_scores[i] = scores[indeces_best_scores[i]]
-          cnt_eo += 1
-          cnt_new_len +=1
-        elif idx[indeces_best_scores[i]] < 0 and cnt_ec < max_ec:
-          new_dataset[i] = dataset[indeces_best_scores[i]]
-          new_labels[i] = labels[indeces_best_scores[i]]
-          new_scores[i] = scores[indeces_best_scores[i]]
-          cnt_ec += 1
-          cnt_new_len +=1
-        else:
-          continue
+    for i in range(new_tot_epoch):
+      if idx[indeces_best_scores[j]] > 0 and cnt_eo < max_eo:
+        new_dataset[i] = dataset[indeces_best_scores[j]]
+        new_labels[i] = labels[indeces_best_scores[j]]
+        new_scores[i] = scores[indeces_best_scores[j]]
+        cnt_eo += 1
+        cnt_new_len +=1
+        j += 1
+      elif idx[indeces_best_scores[j]] < 0 and cnt_ec < max_ec:
+        new_dataset[i] = dataset[indeces_best_scores[j]]
+        new_labels[i] = labels[indeces_best_scores[j]]
+        new_scores[i] = scores[indeces_best_scores[j]]
+        cnt_ec += 1
+        cnt_new_len +=1
+        j += 1
       else:
-        break
+        j += 1
   else: #elimino % epoche peggiori tenendo conto dell'utente
     new_tot_epoch_per_user = int(percentage * len(idx[idx == 1]))
     new_dataset = []
@@ -106,6 +106,7 @@ def filter_ScorEpochs_togli_n_ep_migliori(dataset, labels, scores, idx, percenta
     cnt_ec = 0
     cnt_eo = 0
     cnt_new_len = 0
+    j = 0
     new_tot_epoch = int(percentage * len(labels))
     max_ec = int(new_tot_epoch / 2)
     max_eo = new_tot_epoch - max_ec
@@ -113,24 +114,23 @@ def filter_ScorEpochs_togli_n_ep_migliori(dataset, labels, scores, idx, percenta
     new_labels = np.zeros(new_tot_epoch)
     new_scores = np.zeros(new_tot_epoch)
     indeces_best_scores = np.argsort(scores)
-    for i in range(len(labels)):
-      if cnt_new_len < new_tot_epoch:
-        if idx[indeces_best_scores[i]] > 0 and cnt_eo < max_eo:
-          new_dataset[i] = dataset[indeces_best_scores[i]]
-          new_labels[i] = labels[indeces_best_scores[i]]
-          new_scores[i] = scores[indeces_best_scores[i]]
-          cnt_eo += 1
-          cnt_new_len +=1
-        elif idx[indeces_best_scores[i]] < 0 and cnt_ec < max_ec:
-          new_dataset[i] = dataset[indeces_best_scores[i]]
-          new_labels[i] = labels[indeces_best_scores[i]]
-          new_scores[i] = scores[indeces_best_scores[i]]
-          cnt_ec += 1
-          cnt_new_len +=1
-        else:
-          continue
+    for i in range(new_tot_epoch)):
+      if idx[indeces_best_scores[j]] > 0 and cnt_eo < max_eo:
+        new_dataset[i] = dataset[indeces_best_scores[j]]
+        new_labels[i] = labels[indeces_best_scores[j]]
+        new_scores[i] = scores[indeces_best_scores[j]]
+        cnt_eo += 1
+        cnt_new_len +=1
+        j += 1
+      elif idx[indeces_best_scores[j]] < 0 and cnt_ec < max_ec:
+        new_dataset[i] = dataset[indeces_best_scores[j]]
+        new_labels[i] = labels[indeces_best_scores[j]]
+        new_scores[i] = scores[indeces_best_scores[j]]
+        cnt_ec += 1
+        cnt_new_len +=1
+        j += 1
       else:
-        break
+        j += 1
   else: #elimino % epoche migliori tenendo conto dell'utente
     new_tot_epoch_per_user = int(percentage * len(idx[idx == 1]))
     new_dataset = []
@@ -163,6 +163,7 @@ def filter_ScorEpochs_togli_random(dataset, labels, scores, idx, percentage, use
     cnt_ec = 0
     cnt_eo = 0
     cnt_new_len = 0
+    j = 0
     new_tot_epoch = int(percentage * len(labels))
     max_ec = int(new_tot_epoch / 2)
     max_eo = new_tot_epoch - max_ec
@@ -171,24 +172,23 @@ def filter_ScorEpochs_togli_random(dataset, labels, scores, idx, percentage, use
     new_scores = np.zeros(new_tot_epoch)
     indeces_random = np.arange(len(scores))
     np.random.shuffle(indeces_random)
-    for i in range(len(labels)):
-      if cnt_new_len < new_tot_epoch:
-        if idx[indeces_random[i]] > 0 and cnt_eo < max_eo:
-          new_dataset[i] = dataset[indeces_random[i]]
-          new_labels[i] = labels[indeces_random[i]]
-          new_scores[i] = scores[indeces_random[i]]
-          cnt_eo += 1
-          cnt_new_len +=1
-        elif idx[indeces_random[i]] < 0 and cnt_ec < max_ec:
-          new_dataset[i] = dataset[indeces_random[i]]
-          new_labels[i] = labels[indeces_random[i]]
-          new_scores[i] = scores[indeces_random[i]]
-          cnt_ec += 1
-          cnt_new_len +=1
-        else:
-          continue
+    for i in range(new_tot_epoch):
+      if idx[indeces_random[j]] > 0 and cnt_eo < max_eo:
+        new_dataset[i] = dataset[indeces_random[j]]
+        new_labels[i] = labels[indeces_random[j]]
+        new_scores[i] = scores[indeces_random[j]]
+        cnt_eo += 1
+        cnt_new_len +=1
+        j += 1
+      elif idx[indeces_random[j]] < 0 and cnt_ec < max_ec:
+        new_dataset[i] = dataset[indeces_random[j]]
+        new_labels[i] = labels[indeces_random[j]]
+        new_scores[i] = scores[indeces_random[j]]
+        cnt_ec += 1
+        cnt_new_len +=1
+        j += 1
       else:
-        break
+        j += 1
   else: #elimino % epoche random tenendo conto dell'utente
     new_tot_epoch_per_user = int(percentage * len(idx[idx == 1]))
     new_dataset = []
