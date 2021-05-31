@@ -3,10 +3,14 @@ import mne
 from tesi.find_name_file_and_label import * #specific for this dataset
 from tesi.feature_extraction import feature_extraction
 from scorepochs.Python.scorEpochs import scorEpochs
-from tesi.filter_ScorEpochs import filter_ScorEpochs
-from tesi.filter_ScorEpochs import filter_ScorEpochs_togli_n_ep_peggiori
-from tesi.filter_ScorEpochs import filter_ScorEpochs_togli_n_ep_migliori
-from tesi.filter_ScorEpochs import filter_ScorEpochs_togli_random
+#from tesi.filter_ScorEpochs import filter_ScorEpochs
+#from tesi.filter_ScorEpochs import filter_ScorEpochs_togli_n_ep_peggiori
+#from tesi.filter_ScorEpochs import filter_ScorEpochs_togli_n_ep_migliori
+#from tesi.filter_ScorEpochs import filter_ScorEpochs_togli_random
+from tesi.filter_ScorEpochs1 import filter_ScorEpochs
+from tesi.filter_ScorEpochs1 import filter_ScorEpochs_togli_n_ep_peggiori
+from tesi.filter_ScorEpochs1 import filter_ScorEpochs_togli_n_ep_migliori
+from tesi.filter_ScorEpochs1 import filter_ScorEpochs_togli_random
 from tesi.calculate_acc import accuracy_axis_1
 from tesi.calculate_acc import accuracy_axis_2
 
