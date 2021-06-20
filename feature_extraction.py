@@ -30,7 +30,7 @@ def feature_extraction(cfg, freq_range, nCh, epoch, check_nperseg):
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
     nEp = len(epoch)  # Computes the total number of epochs
 
-    segLen = round(epLen/8)
+    segLen = round(epLen/8) # The default value of nperseg
     if check_nperseg:
       check_freqs = fft.rfftfreq(segLen, 1/cfg['fs'])
       check = 0
@@ -83,7 +83,7 @@ def feature_extraction(cfg, freq_range, nCh, epoch, check_nperseg):
      This way we can obtain an f array and a pxx from sig.welch() which lenght in the interval defined by cfg['freqRange'] is at least 9.
 
     """
-    for e in range(nEp):
+    for e in range(nEp): # The algorithm to compute the PSD is exactly the same as the one used by ScorEpochs, except for nperseg = segLen
         for c in range(nCh):
             # compute power spectrum
             f, aux_pxx = sig.welch(epoch[e][c].T, cfg['fs'], window='hamming', nperseg=segLen, detrend=False)  # The nperseg allows the MATLAB pwelch correspondence
@@ -95,7 +95,6 @@ def feature_extraction(cfg, freq_range, nCh, epoch, check_nperseg):
                 psd[e][c] = _movmean(aux_pxx, cfg['smoothFactor'], initial_f, final_f, nFreq, idx_min, idx_max)
             else:
                 psd[e][c] = aux_pxx[idx_min:idx_max + 1]  # pxx takes the only interested spectrum-related sub-array
-    print(psd.shape)
     return psd
 
 def _movmean(aux_pxx, smoothFactor, initial_f, final_f, nFreq, idx_min, idx_max):   #It is not weighted
