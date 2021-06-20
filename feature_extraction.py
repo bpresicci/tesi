@@ -3,6 +3,29 @@ import numpy as np
 from scipy import fft
 
 def feature_extraction(cfg, freq_range, nCh, epoch, check_nperseg):
+"""
+Returns the PSD computed in the frequency range given as f_band. The algorithm used to compute the PSD
+is exactly the same as the one ScorEpochs uses, except when check_nperseg = True.
+ScorEpochs uses the default value of nperseg, the feature extraction might use a changed value.
+
+INPUT
+    cfg: dictionary with the following key-value pairs
+         freqRange    - list with the frequency range used to compute the power spectrum by ScorEpochs (see scipy.stats.spearmanr()
+                        function)
+         fs           - integer representing sample frequency
+         windowL      - integer representing the window length (in seconds)
+         smoothFactor - smoothing factor for the power spectrum (0 by default)
+         wOverlap     - integer representing the number of seconds of overlap between two consecutive epochs (0 by
+                        default)
+    freq_range: list with the frequency range used to compute the PSD for task of pattern recognition
+    nCh: integer, total number of channels
+    epoch: 3d list of the data divided in equal length epochs of length windowL (epochs X channels X time samples), provided by ScorEpochs
+    check_nperseg: boolean, if True used to check whether the default nperseg parameter is usable to compute correctly the Spearman coefficient,
+                   if not usable, nperseg will be changed. If False, the default value will be used without checking.
+
+OUTPUT:
+    psd:
+"""
     epLen = cfg['windowL'] * cfg['fs']  # Number of samples of each epoch (for each channel)
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
     nEp = len(epoch)  # Total number of epochs
@@ -70,6 +93,7 @@ def feature_extraction(cfg, freq_range, nCh, epoch, check_nperseg):
                 psd[e][c] = _movmean(aux_pxx, cfg['smoothFactor'], initial_f, final_f, nFreq, idx_min, idx_max)
             else:
                 psd[e][c] = aux_pxx[idx_min:idx_max + 1]  # pxx takes the only interested spectrum-related sub-array
+    print(psd.shape)
     return psd
 
 def _movmean(aux_pxx, smoothFactor, initial_f, final_f, nFreq, idx_min, idx_max):   #It is not weighted
