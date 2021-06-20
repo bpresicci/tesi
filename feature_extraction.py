@@ -3,32 +3,32 @@ import numpy as np
 from scipy import fft
 
 def feature_extraction(cfg, freq_range, nCh, epoch, check_nperseg):
-"""
-Returns the PSD computed in the frequency range given as f_band. The algorithm used to compute the PSD
-is exactly the same as the one ScorEpochs uses, except when check_nperseg = True.
-ScorEpochs uses the default value of nperseg, the feature extraction might use a changed value.
+    """
+    Returns the PSD computed in the frequency range given as f_band. The algorithm used to compute the PSD
+    is exactly the same as the one ScorEpochs uses, except when check_nperseg = True.
+    ScorEpochs uses the default value of nperseg, the feature extraction might use a changed value.
 
-INPUT
-    cfg: dictionary with the following key-value pairs
-         freqRange    - list with the frequency range used to compute the power spectrum by ScorEpochs (see scipy.stats.spearmanr()
-                        function)
-         fs           - integer representing sample frequency
-         windowL      - integer representing the window length (in seconds)
-         smoothFactor - smoothing factor for the power spectrum (0 by default)
-         wOverlap     - integer representing the number of seconds of overlap between two consecutive epochs (0 by
-                        default)
-    freq_range: list with the frequency range used to compute the PSD for task of pattern recognition
-    nCh: integer, total number of channels
-    epoch: 3d list of the data divided in equal length epochs of length windowL (epochs X channels X time samples), provided by ScorEpochs
-    check_nperseg: boolean, if True used to check whether the default nperseg parameter is usable to compute correctly the Spearman coefficient,
-                   if not usable, nperseg will be changed. If False, the default value will be used without checking.
+    INPUT
+        cfg: dictionary with the following key-value pairs
+             freqRange    - list with the frequency range used to compute the power spectrum by ScorEpochs (see scipy.stats.spearmanr()
+                            function)
+             fs           - integer representing sample frequency
+             windowL      - integer representing the window length (in seconds)
+             smoothFactor - smoothing factor for the power spectrum (0 by default)
+             wOverlap     - integer representing the number of seconds of overlap between two consecutive epochs (0 by
+                            default)
+        freq_range: list with the frequency range used to compute the PSD for task of pattern recognition
+        nCh: integer, total number of channels
+        epoch: 3d list of the data divided in equal length epochs of length windowL (epochs X channels X time samples), provided by ScorEpochs
+        check_nperseg: boolean, if True used to check whether the default nperseg parameter is usable to compute correctly the Spearman coefficient,
+                       if not usable, nperseg will be changed. If False, the default value will be used without checking.
 
-OUTPUT:
-    psd:
-"""
-    epLen = cfg['windowL'] * cfg['fs']  # Number of samples of each epoch (for each channel)
+    OUTPUT:
+        psd: 3d list containing the computed PSD, has shape: (epochs per user X number of channels X number of PSD samples)
+    """
+    epLen = cfg['windowL'] * cfg['fs']  # Computes the number of samples of each epoch (for each channel)
     smoothing_condition = 'smoothFactor' in cfg.keys() and cfg['smoothFactor'] > 1  # True if the smoothing has to be executed, 0 otherwise
-    nEp = len(epoch)  # Total number of epochs
+    nEp = len(epoch)  # Computes the total number of epochs
 
     segLen = round(epLen/8)
     if check_nperseg:
@@ -40,47 +40,49 @@ OUTPUT:
       if check < 9:
         fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
         segLen = round(1.0/(fix * 1/cfg['fs']))
+    """
+    The array of frequencies returned by sig.welch() depends on the parameter called nperseg, which is the lenght of each segment. Aiming to obtain a sufficient
+    number of computed PSD values to be able to calculate the Spearman coefficients, while keeping an observation window lenght (in seconds, cfg['windowL'])
+    limited and a restricted frequency band (i.e. the alpha band, [8, 13]), it is necessary to modify the computing of nperseg.
+    The function called by sig.welch() to obtain the sample frequencies is fft.rfftfreq(), from the scipy library, but numpy includes an identical
+    function that performs the same calculations and its raw code is available, unlike scipy's one.
+    In the source code of numpy.fft.rfftfreq() (https://github.com/numpy/numpy/blob/v1.20.0/numpy/fft/helper.py#L172-L221) can be read:
 
-# L'array di frequenze restituite da sig.welch() ("Array of sample frequencies") dipende dal parametro nperseg, che è la lunghezza di ogni segmento. Volendo ottenere un numero
-# sufficiente di valori di PSD da usare per ricavare i coefficienti di Spearman, mantenendo una finestra di osservazione (in secondi, cfg['windowL'] piccola
-# ed una ridotta banda di frequenza (per esempio la banda alpha, [8, 13]) si deve modificare il calcolo di nperseg.
-# La funzione chiamata da sig.welch() per ottenere le frequenze è fft.rfftfreq() di scipy, ma numpy ha una funzione identica che fa gli stessi calcoli.
-# Il codice sorgente di numpy.fft.rfftfreq() (https://github.com/numpy/numpy/blob/v1.20.0/numpy/fft/helper.py#L172-L221) comprende:
+     Parameters
+        ----------
+        n : int
+           Window length.
+       d : scalar, optional
+           Sample spacing (inverse of the sampling rate). Defaults to 1.
+       Returns
+       -------
+       f : ndarray
+           Array of length ``n//2 + 1`` containing the sample frequencies.
 
-# Parameters
-#    ----------
-#    n : int
-#       Window length.
-#   d : scalar, optional
-#       Sample spacing (inverse of the sampling rate). Defaults to 1.
-#   Returns
-#   -------
-#   f : ndarray
-#       Array of length ``n//2 + 1`` containing the sample frequencies.
+     def rfftfreq(n, d=1.0):
+       if not isinstance(n, integer_types):
+           raise ValueError("n should be an integer")
+       val = 1.0/(n*d)
+       N = n//2 + 1
+       results = arange(0, N, dtype=int)
+       return results * val
 
-# def rfftfreq(n, d=1.0):
-#   if not isinstance(n, integer_types):
-#       raise ValueError("n should be an integer")
-#   val = 1.0/(n*d)
-#   N = n//2 + 1
-#   results = arange(0, N, dtype=int)
-#   return results * val
+     Be cfg['freqRange'] = [low, high], if we want that in this band there were at least 9 sample frequencies to compute the PSD with, the value of "val"
+     has to be changed, because it is the distance between a frequency and the following one in the array "f" returned by sig.welch()
+     (it can be easily verified that f[i] - f[i - 1] = val). "d" is the reciprocal number of "fs", n = nperseg, so it follows:
+     val = 1/(n*d) = fs/nperseg
+     number of sample frequencies in cfg['freqRange'] = (high - low) / val
+     And:
+     (high - low) / val >= 9
+     val <= (high - low) / 9
+     Which leads to:
+     fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
+     val = fs / nperseg -> nperseg = fs/val = 1/(val * d) con d = 1/fs
+     So:
+     segLen = 1.0/(fix * 1/cfg['fs'])
+     This way we can obtain an f array and a pxx from sig.welch() which lenght in the interval defined by cfg['freqRange'] is at least 9.
 
-# Sia cfg['freqRange'] = [low, high], se si vuole imporre che in tale banda vi siano almeno 9 frequenze associate ad altrettanti valori di PSD, si deve modificare
-# il valore di val, perchè è la distanza fra una frequenza e quella successiva nell'array f restituito in output da sig.welch()
-# (si può verificare che f[1] - f[0] = val). d è l'inverso di fs, n è nperseg, quindi:
-# val = 1/(n*d) = fs/nperseg
-# numero di frequenze in cfg['freqRange'] = (high - low) / val
-# Quindi:
-# (high - low) / val >= 9
-# val <= (high - low) / 9
-# da cui:
-# fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
-# val = fs / nperseg -> nperseg = fs/val = 1/(val * d) con d = 1/fs
-# da cui: 
-# segLen = 1.0/(fix * 1/cfg['fs'])
-# Così si ottengono un array f e pxx da sig.welch() la cui lunghezza nell'intervallo definito da cfg['freqRange'] è almeno 9.
-
+    """
     for e in range(nEp):
         for c in range(nCh):
             # compute power spectrum
