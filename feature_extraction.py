@@ -70,16 +70,24 @@ def feature_extraction(cfg, freq_range, nCh, epoch, check_nperseg):
      Be cfg['freqRange'] = [low, high], if we want that in this band there were at least 9 sample frequencies to compute the PSD with, the value of "val"
      has to be changed, because it is the distance between a frequency and the following one in the array "f" returned by sig.welch()
      (it can be easily verified that f[i] - f[i - 1] = val). "d" is the reciprocal number of "fs", n = nperseg, so it follows:
+     
      val = 1/(n*d) = fs/nperseg
      number of sample frequencies in cfg['freqRange'] = (high - low) / val
+     
      And:
+     
      (high - low) / val >= 9
      val <= (high - low) / 9
+     
      Which leads to:
+     
      fix = (cfg['freqRange'][1] - cfg['freqRange'][0]) / 9
-     val = fs / nperseg -> nperseg = fs/val = 1/(val * d) con d = 1/fs
+     val = fs / nperseg -> nperseg = fs/val = 1/(val * d) with d = 1/fs
+     
      So:
+     
      segLen = 1.0/(fix * 1/cfg['fs'])
+     
      This way we can obtain an f array and a pxx from sig.welch() which lenght in the interval defined by cfg['freqRange'] is at least 9.
 
     """
