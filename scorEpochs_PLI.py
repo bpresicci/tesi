@@ -21,8 +21,6 @@ def scorEpochs_PLI(cfg, data, bands):
 
        data: 2d array with the time-series (channels X time samples)
 
-
-
     OUTPUT
 
        idx_best_ep: list of indexes sorted according to the best score (this list should be used for the selection of the
@@ -33,12 +31,12 @@ def scorEpochs_PLI(cfg, data, bands):
        score_Xep:   array of score per epoch
     """
 
-    X = filter_data(data, cfg["fs"], bands)
-    epochs, epoch_lenght = split_epoch(X, cfg["fs"], cfg["windowL"])
-    X_PLI = np.array([PLI(np.transpose(epoch)) for epoch in epochs])
+    X = filter_data(data, cfg["fs"], bands)                                  # Perform the filtering of the data
+    epochs, epoch_lenght = split_epoch(X, cfg["fs"], cfg["windowL"])         # Split the filtered data in epochs
+    X_PLI = np.array([PLI(np.transpose(epoch)) for epoch in epochs])         # Compute the PLI for each epoch
     n_ch = len(data)
     n_ep = len(epochs)
-    X_PLI_x_ch = np.zeros((n_ep, n_ch)) #n_ch == num of computed values with PLI -> X_PLI.shape == (n_ep, n_ch, n_ch)
+    X_PLI_x_ch = np.zeros((n_ep, n_ch))
     score_ch_x_ep = np.zeros((n_ch, n_ep))
     for c in range(n_ch):
         for e in range(n_ep):
@@ -49,9 +47,6 @@ def scorEpochs_PLI(cfg, data, bands):
     idx_best_ep = np.argsort(score_x_ep)                        # Obtains of the indexes from the worst epoch to the best
     idx_best_ep = idx_best_ep[::-1]                             # Reversing to obtain the descending order (from the best to the worst)
     return idx_best_ep, epochs, score_x_ep
-
-
-
 
 def _spectrum_parameters(f, freqRange, aux_pxx, nEp, nCh):
     """
