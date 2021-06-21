@@ -1,57 +1,3 @@
-"""
- scorEpochs
-
- Function to select the best (most homogenoous) M/EEG epochs from a
- resting-state recordings.
-
- INPUT
-    cfg: dictionary with the following key-value pairs
-         freqRange    - list with the frequency range used to compute the power spectrum (see scipy.stats.spearmanr()
-                        function)
-         fs           - integer representing sample frequency
-         windowL      - integer representing the window length (in seconds)
-         smoothFactor - smoothing factor for the power spectrum (0 by default)
-         wOverlap     - integer representing the number of seconds of overlap between two consecutive epochs (0 by
-                        default)
-
-    data: 2d array with the time-series (channels X time samples)
-
-
-
- OUTPUT
-
-    idx_best_ep: list of indexes sorted according to the best score (this list should be used for the selection of the
-                  best epochs)
-
-    epoch:       3d list of the data divided in equal length epochs of length windowL (epochs X channels X time samples)
-
-    score_Xep:   array of score per epoch
-
-
- Author:       Simone Maurizio La Cava
- Contributors: Benedetta Presicci
-
-
-
-
-
-     Copyright (C) 2020 Simone Maurizio La Cava
-
-     This program is free software: you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published by
-     the Free Software Foundation, either version 3 of the License, or
-     (at your option) any later version.
-
-     This program is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     GNU General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
-
-
 import numpy as np
 from scipy import signal as sig
 from scipy import stats as st
@@ -60,20 +6,31 @@ import mne
 
 def scorEpochs_PLI(cfg, data, bands):
     """
-    :param cfg:  dictionary with the following key-value pairs
-                 freqRange    - list with the frequency range used to compute the power spectrum (see
-                                scipy.stats.spearmanr() function)
-                 fs           - integer representing sample frequency
-                 windowL      - integer representing the window length (in seconds)
-                 wOverlap     - integer representing the number of seconds of overlap between two consecutive epochs (0
-                                by default)
-    :param data: 2d array with the time-series (channels X time samples)
+    Function to select the best (most homogenoous) M/EEG epochs from a
+    resting-state recordings.
 
-    :return:     idx_best_ep - list of indexes sorted according to the best score (this list should be used for the
-                               selection of the best epochs)
-                 epoch       - 3d list of the data divided in equal length epochs of length windowL
-                               (channels X epochs X time samples)
-                 score_Xep   - array of score per epoch
+    INPUT
+       cfg: dictionary with the following key-value pairs
+            freqRange    - list with the frequency range used to compute the power spectrum (see scipy.stats.spearmanr()
+                           function)
+            fs           - integer representing sample frequency
+            windowL      - integer representing the window length (in seconds)
+            smoothFactor - smoothing factor for the power spectrum (0 by default)
+            wOverlap     - integer representing the number of seconds of overlap between two consecutive epochs (0 by
+                           default)
+
+       data: 2d array with the time-series (channels X time samples)
+
+
+
+    OUTPUT
+
+       idx_best_ep: list of indexes sorted according to the best score (this list should be used for the selection of the
+                     best epochs)
+
+       epoch:       3d list of the data divided in equal length epochs of length windowL (epochs X channels X time samples)
+
+       score_Xep:   array of score per epoch
     """
 
     X = filter_data(data, cfg["fs"], bands)
@@ -87,10 +44,10 @@ def scorEpochs_PLI(cfg, data, bands):
         for e in range(n_ep):
             X_PLI_x_ch[e] = X_PLI[e][c]
         score_ch, p = st.spearmanr(X_PLI_x_ch, axis=1)          # Correlation between the PLI of the epochs within each channel
-        score_ch_x_ep[c][0:n_ep] += np.mean(score_ch, axis=1)  # Mean similarity score of an epoch with all the epochs for each channel
-    score_x_ep = np.mean(score_ch_x_ep, axis=0)                # The score of each epoch is equal to the mean of the scores of all the channels in that epoch
-    idx_best_ep = np.argsort(score_x_ep)                     # Obtains of the indexes from the worst epoch to the best
-    idx_best_ep = idx_best_ep[::-1]                         # Reversing to obtain the descending order (from the best to the worst)
+        score_ch_x_ep[c][0:n_ep] += np.mean(score_ch, axis=1)   # Mean similarity score of an epoch with all the epochs for each channel
+    score_x_ep = np.mean(score_ch_x_ep, axis=0)                 # The score of each epoch is equal to the mean of the scores of all the channels in that epoch
+    idx_best_ep = np.argsort(score_x_ep)                        # Obtains of the indexes from the worst epoch to the best
+    idx_best_ep = idx_best_ep[::-1]                             # Reversing to obtain the descending order (from the best to the worst)
     return idx_best_ep, epochs, score_x_ep
 
 
@@ -107,15 +64,38 @@ def _spectrum_parameters(f, freqRange, aux_pxx, nEp, nCh):
     return pxx, idx_min, idx_max, nFreq
 
 def _overlap(cfg, ep_len, data_len):
+ """
+ Function that implements the optional overlap of epochs.
+ 
+ INPUT
+   cfg: Dictionary needed for ScorEpochs to work
+   ep_len: Integer, lenght of each epoch in samples
+   data_len: Integer, lenght of the whole data in samples
+ 
+ OUTPUT
+   idx_ep: List of indexes from which start each epoch
+   
+ """
     is_overlap = 'wOverlap' in cfg.keys()  # isOverlap = True if the user wants a sliding window; the user will assign the value in seconds of the overlap desired to the key 'wOverlap'
     if is_overlap:
         idx_jump = (cfg['windowL'] - cfg['wOverlap']) * cfg['fs']  # idx_jump is the number of samples that separates the beginning of an epoch and the following one
     else:
         idx_jump = ep_len
-    idx_ep = range(0, data_len - ep_len + 1, idx_jump)  # Indexes from which start each epoch
+    idx_ep = range(0, data_len - ep_len + 1, idx_jump)
     return idx_ep
 
 def filter_data(raw_data, srate, bands):
+ """
+ Function that applies a filter to the frequencies.
+ 
+ INPUT
+   raw_data: 2d array with the time-series EEG data of size: number of channels X samples
+   srate: Integer, sampling rate
+   bands: List of frequency bands of interest
+   
+ OUTPUT
+   filtered_data: 2d array with the filtered EEG data
+ """
     for band in bands:
         low, high = bands[band]
         filtered_data = mne.filter.filter_data(raw_data, srate, low, high)
@@ -123,25 +103,23 @@ def filter_data(raw_data, srate, bands):
 
 def split_epoch(X, srate, t_epoch_lenght, t_discard=0):
     """
-    :param X:  2d array with the time-series EEG data.  n_channels x (duration*srate)
-    :param srate: sampling rate
-    :param t_epoch_lenght : lenght of the epoch (in seconds)
-    :param t_discard: initial portion of the record to be deleted (to eliminate initial artifacts)
+    Function that divides the signal in epochs.
+    INPUT
+     X:  2d array with the time-series EEG data.  number of channels X samples
+     srate: Integer, sampling rate
+     t_epoch_lenght: Integer, lenght of the epoch (in seconds)
+     t_discard: Integer, initial portion of the record to be deleted (to eliminate initial artifacts)
 
-
-
-    :return:    epoch       - list of the data divided in equal length epochs
-                epoch_lenght - lenght in samples - number of samples (per channel) for each epoch
-
-
+    OUTPUT
+     epochs: List of the data divided in equal length epochs
+     epoch_lenght: Integer, lenght in samples - number of samples (per channel) for each epoch
     """
 
     [n_channels, n_sample] = X.shape
 
-    i_0 = t_discard * srate  # devo eliminare t_discard*srate campioni
-    # i_0 non è un tempo - è un indice
+    i_0 = t_discard * srate
 
-    epoch_lenght = t_epoch_lenght * srate  # lunghezza epoca  espressa in numero di campioni
+    epoch_lenght = t_epoch_lenght * srate
 
     n_epochs = round((n_sample - i_0 - 1) / epoch_lenght)
 
@@ -152,14 +130,18 @@ def split_epoch(X, srate, t_epoch_lenght, t_discard=0):
         epoch = X[0:n_channels, i_start:i_stop]
         epochs.append(epoch)
 
-    # one-line
-    # epochs = [ X[:, i_0 + i_epoch * epoch_lenght: (i_epoch +1 )* epoch_lenght]  for i_epoch in range(n_epochs) ]
-
     return epochs, epoch_lenght
 
 
 
 def PLI(epoch):
+    """
+    Function to compute the PLI.
+    INPUT
+      epoch: 2d array with the data in the epoch
+    OUTPUT
+      PLI: 2d symmetric matrix, with shape number of channels X number of channels, containing the computed PLI values
+    """
     nLoc = np.shape(epoch)[-1]
     PLI = np.zeros(shape=(nLoc, nLoc))
     complex_sig = sig.hilbert(epoch)
