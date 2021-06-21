@@ -11,24 +11,21 @@ def scorEpochs_PLI(cfg, data, bands):
 
     INPUT
        cfg: dictionary with the following key-value pairs
-            freqRange    - list with the frequency range used to compute the power spectrum (see scipy.stats.spearmanr()
-                           function)
+            freqRange    - list with the frequency range used to compute the PLI by ScorEpochs
             fs           - integer representing sample frequency
             windowL      - integer representing the window length (in seconds)
-            smoothFactor - smoothing factor for the power spectrum (0 by default)
-            wOverlap     - integer representing the number of seconds of overlap between two consecutive epochs (0 by
-                           default)
 
        data: 2d array with the time-series (channels X time samples)
+       bands: list of frequency bands of interest
 
     OUTPUT
 
        idx_best_ep: list of indexes sorted according to the best score (this list should be used for the selection of the
                      best epochs)
 
-       epoch:       3d list of the data divided in equal length epochs of length windowL (epochs X channels X time samples)
+       epochs:       3d list of the data divided in equal length epochs of length windowL (epochs X channels X time samples)
 
-       score_Xep:   array of score per epoch
+       score_x_ep:   array of score per epoch
     """
 
     X = filter_data(data, cfg["fs"], bands)                                  # Perform the filtering of the data
@@ -58,39 +55,18 @@ def _spectrum_parameters(f, freqRange, aux_pxx, nEp, nCh):
     pxx = np.zeros((nEp, nCh, nFreq))
     return pxx, idx_min, idx_max, nFreq
 
-def _overlap(cfg, ep_len, data_len):
- """
- Function that implements the optional overlap of epochs.
- 
- INPUT
-   cfg: Dictionary needed for ScorEpochs to work
-   ep_len: Integer, lenght of each epoch in samples
-   data_len: Integer, lenght of the whole data in samples
- 
- OUTPUT
-   idx_ep: List of indexes from which start each epoch
-   
- """
-    is_overlap = 'wOverlap' in cfg.keys()  # isOverlap = True if the user wants a sliding window; the user will assign the value in seconds of the overlap desired to the key 'wOverlap'
-    if is_overlap:
-        idx_jump = (cfg['windowL'] - cfg['wOverlap']) * cfg['fs']  # idx_jump is the number of samples that separates the beginning of an epoch and the following one
-    else:
-        idx_jump = ep_len
-    idx_ep = range(0, data_len - ep_len + 1, idx_jump)
-    return idx_ep
-
 def filter_data(raw_data, srate, bands):
- """
- Function that applies a filter to the frequencies.
- 
- INPUT
-   raw_data: 2d array with the time-series EEG data of size: number of channels X samples
-   srate: Integer, sampling rate
-   bands: List of frequency bands of interest
-   
- OUTPUT
-   filtered_data: 2d array with the filtered EEG data
- """
+    """
+     Function that applies a filter to the frequencies.
+
+     INPUT
+       raw_data: 2d array with the time-series EEG data of size: number of channels X samples
+       srate: Integer, sampling rate
+       bands: List of frequency bands of interest
+
+     OUTPUT
+       filtered_data: 2d array with the filtered EEG data
+    """
     for band in bands:
         low, high = bands[band]
         filtered_data = mne.filter.filter_data(raw_data, srate, low, high)
