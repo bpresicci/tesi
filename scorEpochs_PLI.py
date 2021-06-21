@@ -16,7 +16,7 @@ def scorEpochs_PLI(cfg, data, bands):
             windowL      - integer representing the window length (in seconds)
 
        data: 2d array with the time-series (channels X time samples)
-       bands: list of frequency bands of interest
+       bands: dictionary of frequency bands of interest
 
     OUTPUT
 
@@ -61,8 +61,8 @@ def filter_data(raw_data, srate, bands):
 
      INPUT
        raw_data: 2d array with the time-series EEG data of size: number of channels X samples
-       srate: Integer, sampling rate
-       bands: List of frequency bands of interest
+       srate: integer, sampling rate
+       bands: dictionary of frequency bands of interest
 
      OUTPUT
        filtered_data: 2d array with the filtered EEG data
@@ -77,13 +77,13 @@ def split_epoch(X, srate, t_epoch_lenght, t_discard=0):
     Function that divides the signal in epochs.
     INPUT
      X:  2d array with the time-series EEG data.  number of channels X samples
-     srate: Integer, sampling rate
-     t_epoch_lenght: Integer, lenght of the epoch (in seconds)
-     t_discard: Integer, initial portion of the record to be deleted (to eliminate initial artifacts)
+     srate: integer, sampling rate
+     t_epoch_lenght: integer, lenght of the epoch (in seconds)
+     t_discard: integer, initial portion of the record to be deleted (to eliminate initial artifacts)
 
     OUTPUT
-     epochs: List of the data divided in equal length epochs
-     epoch_lenght: Integer, lenght in samples - number of samples (per channel) for each epoch
+     epochs: list of the data divided in equal length epochs
+     epoch_lenght: integer, lenght in samples - number of samples (per channel) for each epoch
     """
 
     [n_channels, n_sample] = X.shape
